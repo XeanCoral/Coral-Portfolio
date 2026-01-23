@@ -164,7 +164,7 @@ export default function Home() {
                     type="text"
                     value={tempName}
                     onChange={(e) => setTempName(e.target.value)}
-                    className="w-full px-4 py-3 text-center text-2xl font-bold rounded-lg border-2 border-accent bg-background text-foreground focus:outline-none focus:border-primary transition-colors"
+                    className="w-full px-4 py-3 text-center text-2xl font-bold rounded-lg border-2 border-accent bg-background focus:outline-none focus:border-primary transition-colors text-teal-500"
                     placeholder="Enter your name"
                     autoFocus
                   />
