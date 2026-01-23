@@ -2,6 +2,8 @@
 
 import { motion } from 'framer-motion'
 import Link from 'next/link'
+import { useState, useEffect } from 'react'
+import { Sun, Moon } from 'lucide-react'
 
 interface NavigationProps {
   isScrolled: boolean
@@ -10,6 +12,33 @@ interface NavigationProps {
 const navItems = ['About', 'Projects', 'Experience', 'Contact']
 
 export default function Navigation({ isScrolled }: NavigationProps) {
+  const [isDark, setIsDark] = useState(false)
+
+  useEffect(() => {
+    // Check initial theme
+    const theme = document.documentElement.classList.contains('dark')
+    setIsDark(theme)
+
+    // Listen for theme changes
+    const observer = new MutationObserver(() => {
+      const isDarkMode = document.documentElement.classList.contains('dark')
+      setIsDark(isDarkMode)
+    })
+
+    observer.observe(document.documentElement, {
+      attributes: true,
+      attributeFilter: ['class'],
+    })
+
+    return () => observer.disconnect()
+  }, [])
+
+  const handleThemeToggle = () => {
+    if (typeof window !== 'undefined' && (window as any).toggleTheme) {
+      ;(window as any).toggleTheme()
+    }
+  }
+
   return (
     <motion.nav
       initial={{ y: -100 }}
@@ -38,6 +67,21 @@ export default function Navigation({ isScrolled }: NavigationProps) {
               {item}
             </motion.a>
           ))}
+          
+          <motion.button
+            onClick={handleThemeToggle}
+            whileHover={{ scale: 1.1 }}
+            whileTap={{ scale: 0.95 }}
+            className="p-2 rounded-full bg-foreground/10 hover:bg-foreground/20 transition-colors"
+            aria-label="Toggle theme"
+          >
+            {isDark ? (
+              <Sun className="w-5 h-5 text-yellow-400" />
+            ) : (
+              <Moon className="w-5 h-5 text-foreground/70" />
+            )}
+          </motion.button>
+
           <motion.button
             whileHover={{ scale: 1.05 }}
             whileTap={{ scale: 0.95 }}

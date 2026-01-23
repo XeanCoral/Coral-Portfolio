@@ -64,9 +64,16 @@ export default function Hero() {
 
         <motion.p
           variants={textVariants}
+          className="text-lg md:text-xl text-primary font-semibold mb-6"
+        >
+          Full-Stack Developer creating human-centered digital experiences with modern technology
+        </motion.p>
+
+        <motion.p
+          variants={textVariants}
           className="text-lg md:text-xl text-foreground/70 mb-10 leading-relaxed max-w-2xl mx-auto"
         >
-          I build beautiful, accessible, and performant web experiences that blend thoughtful design with robust engineering.
+          I build beautiful, accessible, and performant web experiences that blend thoughtful design with robust engineering. Passionate about AI, scalable systems, and pushing the boundaries of what's possible on the web.
         </motion.p>
 
         <motion.div

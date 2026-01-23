@@ -4,11 +4,13 @@ import { useState, useEffect } from 'react'
 import { motion } from 'framer-motion'
 import Hero from '@/components/Hero'
 import About from '@/components/About'
+import BigThree from '@/components/BigThree'
+import CurrentlyLearning from '@/components/CurrentlyLearning'
 import Projects from '@/components/Projects'
 import Experience from '@/components/Experience'
 import Contact from '@/components/Contact'
 import Navigation from '@/components/Navigation'
-import Home from '@/components/Home' // Declare the Home component
+import Home from '@/components/Home'
 
 export default function Page() {
   const [activeSection, setActiveSection] = useState('home')
@@ -28,7 +30,9 @@ export default function Page() {
       <main className="relative">
         <Hero />
         <About />
-        <Home /> // Use the Home component
+        <Home />
+        <BigThree />
+        <CurrentlyLearning />
         <Projects />
         <Experience />
         <Contact />
