@@ -9,7 +9,7 @@ import { Button } from '@/components/ui/button'
 
 export default function Home() {
   const [userName, setUserName] = useState('Xean Coral')
-  const [profileImage, setProfileImage] = useState<string | null>(null)
+  const [profileImage, setProfileImage] = useState<string | null>('/images/img-9132.jpeg')
   const [isEditing, setIsEditing] = useState(false)
   const [tempName, setTempName] = useState(userName)
   const fileInputRef = useRef<HTMLInputElement>(null)
