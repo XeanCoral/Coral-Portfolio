@@ -68,27 +68,18 @@ export default function About() {
           </motion.div>
 
           <motion.div
-            variants={containerVariants}
-            initial="hidden"
-            animate={inView ? "visible" : "hidden"}
-            className="space-y-4"
+            initial={{ opacity: 0, x: 40 }}
+            animate={inView ? { opacity: 1, x: 0 } : { opacity: 0, x: 40 }}
+            transition={{ duration: 0.8 }}
+            className="flex justify-center"
           >
-            {skills.map((skill) => (
-              <motion.div key={skill.name} variants={itemVariants} className="space-y-2">
-                <div className="flex justify-between items-center">
-                  <span className="font-semibold text-foreground">{skill.name}</span>
-                  <span className="text-accent">{skill.level}%</span>
-                </div>
-                <div className="w-full bg-foreground/10 rounded-full h-2 overflow-hidden">
-                  <motion.div
-                    initial={{ width: 0 }}
-                    animate={inView ? { width: `${skill.level}%` } : { width: 0 }}
-                    transition={{ duration: 1.2, ease: 'easeOut' }}
-                    className="h-full bg-gradient-to-r from-primary to-accent rounded-full"
-                  />
-                </div>
-              </motion.div>
-            ))}
+            <div className="relative rounded-3xl overflow-hidden shadow-xl">
+              <img
+                src="/images/img-9132.jpeg"
+                alt="Profile"
+                className="w-full h-auto object-cover"
+              />
+            </div>
           </motion.div>
         </div>
       </div>
