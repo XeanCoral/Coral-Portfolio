@@ -12,6 +12,15 @@ const transporter = nodemailer.createTransport({
 
 export async function POST(request: NextRequest) {
   try {
+    // Check if environment variables are set
+    if (!process.env.GMAIL_USER || !process.env.GMAIL_APP_PASSWORD) {
+      console.error('[v0] Missing email environment variables')
+      return NextResponse.json(
+        { error: 'Email service not configured. Please set GMAIL_USER and GMAIL_APP_PASSWORD.' },
+        { status: 500 }
+      )
+    }
+
     const { name, email, message } = await request.json()
 
     // Validate inputs
@@ -21,6 +30,17 @@ export async function POST(request: NextRequest) {
         { status: 400 }
       )
     }
+
+    // Email validation
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/
+    if (!emailRegex.test(email)) {
+      return NextResponse.json(
+        { error: 'Invalid email address' },
+        { status: 400 }
+      )
+    }
+
+    console.log('[v0] Sending email to:', process.env.GMAIL_USER)
 
     // Send email to your Gmail
     await transporter.sendMail({
@@ -59,29 +79,37 @@ ${message}
       text: `New Contact Form Submission\n\nName: ${name}\nEmail: ${email}\n\nMessage:\n${message}`,
     })
 
-    // Optional: Send confirmation email to the user
-    await transporter.sendMail({
-      from: process.env.GMAIL_USER,
-      to: email,
-      subject: 'We received your message',
-      html: `
-        <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 20px;">
-          <h2 style="color: #1f2937;">Thank you for reaching out!</h2>
-          <p style="color: #6b7280;">Hi ${name},</p>
-          <p style="color: #6b7280;">I've received your message and will get back to you as soon as possible.</p>
-          <p style="color: #6b7280;">Best regards,<br/>Your Portfolio Owner</p>
-        </div>
-      `,
-    })
+    console.log('[v0] Email sent to your Gmail successfully')
+
+    // Send confirmation email to the user
+    try {
+      await transporter.sendMail({
+        from: process.env.GMAIL_USER,
+        to: email,
+        subject: 'We received your message',
+        html: `
+          <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 20px;">
+            <h2 style="color: #1f2937;">Thank you for reaching out!</h2>
+            <p style="color: #6b7280;">Hi ${name},</p>
+            <p style="color: #6b7280;">I've received your message and will get back to you as soon as possible.</p>
+            <p style="color: #6b7280;">Best regards,<br/>Xean Coral</p>
+          </div>
+        `,
+      })
+    } catch (confirmError) {
+      console.log('[v0] Confirmation email failed (non-critical):', confirmError)
+      // Don't fail the whole request if confirmation email fails
+    }
 
     return NextResponse.json(
       { message: 'Email sent successfully' },
       { status: 200 }
     )
   } catch (error) {
-    console.error('Email error:', error)
+    console.error('[v0] Email error:', error)
+    const errorMessage = error instanceof Error ? error.message : 'Failed to send email'
     return NextResponse.json(
-      { error: 'Failed to send email' },
+      { error: errorMessage },
       { status: 500 }
     )
   }
