@@ -7,9 +7,12 @@ interface ThemeProviderProps {
 }
 
 export function ThemeProvider({ children }: ThemeProviderProps) {
-  const [theme, setTheme] = useState<'light' | 'dark' | null>(null)
+  const [mounted, setMounted] = useState(false)
+  const [theme, setTheme] = useState<'light' | 'dark'>('light')
 
   useEffect(() => {
+    setMounted(true)
+    
     // Get initial theme from localStorage or system preference
     const savedTheme = localStorage.getItem('theme') as 'light' | 'dark' | null
     const prefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches
@@ -39,8 +42,15 @@ export function ThemeProvider({ children }: ThemeProviderProps) {
 
   // Store toggleTheme in window for Navigation to access
   useEffect(() => {
-    ;(window as any).toggleTheme = toggleTheme
-  }, [])
+    if (mounted) {
+      ;(window as any).toggleTheme = toggleTheme
+    }
+  }, [mounted])
+
+  // Prevent hydration mismatch by only rendering after client-side mount
+  if (!mounted) {
+    return <>{children}</>
+  }
 
   return <>{children}</>
 }

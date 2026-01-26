@@ -1,13 +1,23 @@
 'use client'
 
 import React, { useRef, useState, useEffect } from "react"
-
+import emailjs from '@emailjs/browser'
 import { motion } from 'framer-motion'
 import { Mail, Facebook, Github, Instagram } from 'lucide-react'
 
 export default function Contact() {
   const ref = useRef(null)
   const [inView, setInView] = useState(false)
+  const [emailjsReady, setEmailjsReady] = useState(false)
+
+  // Initialize EmailJS on component mount
+  useEffect(() => {
+    const publicKey = process.env.NEXT_PUBLIC_EMAILJS_PUBLIC_KEY
+    if (publicKey) {
+      emailjs.init(publicKey)
+      setEmailjsReady(true)
+    }
+  }, [])
 
   useEffect(() => {
     const observer = new IntersectionObserver(
@@ -38,19 +48,71 @@ export default function Contact() {
   })
 
   const [submitted, setSubmitted] = useState(false)
+  const [loading, setLoading] = useState(false)
+  const [error, setError] = useState<string | null>(null)
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
     setFormData({
       ...formData,
       [e.target.name]: e.target.value
     })
+    setError(null) // Clear error when user starts typing
   }
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
-    setSubmitted(true)
-    setTimeout(() => setSubmitted(false), 3000)
-    setFormData({ name: '', email: '', message: '' })
+    setLoading(true)
+    setError(null)
+
+    try {
+      // Check if EmailJS is ready
+      if (!emailjsReady) {
+        throw new Error('Email service is not ready. Please refresh the page.')
+      }
+
+      // Check if all config variables exist
+      const serviceId = process.env.NEXT_PUBLIC_EMAILJS_SERVICE_ID
+      const templateId = process.env.NEXT_PUBLIC_EMAILJS_TEMPLATE_ID
+      const publicKey = process.env.NEXT_PUBLIC_EMAILJS_PUBLIC_KEY
+
+      if (!serviceId || !templateId || !publicKey) {
+        throw new Error('Email configuration is incomplete. Please check your environment variables.')
+      }
+
+      // Validate form data
+      if (!formData.name.trim() || !formData.email.trim() || !formData.message.trim()) {
+        throw new Error('Please fill in all fields')
+      }
+
+      const templateParams = {
+        user_name: formData.name,
+        user_email: formData.email,
+        message: formData.message,
+      }
+
+      // Send email
+      const response = await emailjs.send(serviceId, templateId, templateParams)
+
+      if (response.status === 200) {
+        setSubmitted(true)
+        setFormData({ name: '', email: '', message: '' })
+        setTimeout(() => setSubmitted(false), 4000)
+      } else {
+        throw new Error(`Email service returned status: ${response.status}`)
+      }
+    } catch (error: unknown) {
+      let errorMessage = 'Failed to send message'
+      if (error instanceof Error) {
+        errorMessage = error.message
+      }
+      setError(errorMessage)
+      // Log to browser console for debugging
+      if (typeof window !== 'undefined') {
+        console.log('EmailJS Error Details:', error)
+      }
+    } finally {
+      setLoading(false)
+    }
   }
 
   const socialLinks = [
@@ -87,6 +149,12 @@ export default function Contact() {
             className="bg-card/50 backdrop-blur border border-border rounded-2xl p-8"
           >
             <form onSubmit={handleSubmit} className="space-y-6">
+              {error && (
+                <div className="p-4 bg-red-500/10 border border-red-500 rounded-lg">
+                  <p className="text-red-500 text-sm font-medium">{error}</p>
+                </div>
+              )}
+
               <div>
                 <label htmlFor="name" className="block text-sm font-semibold text-foreground mb-2">
                   Your Name
@@ -100,6 +168,7 @@ export default function Contact() {
                   required
                   placeholder="John Doe"
                   className="w-full px-4 py-3 bg-input border border-border rounded-lg focus:outline-none focus:border-primary transition-colors text-foreground placeholder:text-foreground/50"
+                  disabled={loading}
                 />
               </div>
 
@@ -116,6 +185,7 @@ export default function Contact() {
                   required
                   placeholder="john@example.com"
                   className="w-full px-4 py-3 bg-input border border-border rounded-lg focus:outline-none focus:border-primary transition-colors text-foreground placeholder:text-foreground/50"
+                  disabled={loading}
                 />
               </div>
 
@@ -132,6 +202,7 @@ export default function Contact() {
                   rows={5}
                   placeholder="Your message here..."
                   className="w-full px-4 py-3 bg-input border border-border rounded-lg focus:outline-none focus:border-primary transition-colors text-foreground placeholder:text-foreground/50 resize-none"
+                  disabled={loading}
                 />
               </div>
 
@@ -139,9 +210,10 @@ export default function Contact() {
                 whileHover={{ scale: 1.02 }}
                 whileTap={{ scale: 0.98 }}
                 type="submit"
-                className="w-full px-6 py-3 bg-gradient-to-r from-primary to-accent text-white rounded-lg font-semibold hover:shadow-lg transition-shadow"
+                disabled={loading || submitted}
+                className="w-full px-6 py-3 bg-gradient-to-r from-primary to-accent text-white rounded-lg font-semibold hover:shadow-lg transition-shadow disabled:opacity-70 disabled:cursor-not-allowed"
               >
-                {submitted ? '✓ Message Sent!' : 'Send Message'}
+                {loading ? 'Sending...' : submitted ? '✓ Message Sent!' : 'Send Message'}
               </motion.button>
             </form>
           </motion.div>
