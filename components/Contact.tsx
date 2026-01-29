@@ -5,7 +5,8 @@ import React from "react"
 import { motion } from 'framer-motion'
 import { useInView } from 'react-intersection-observer'
 import { Mail, Linkedin, Github, Twitter } from 'lucide-react'
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
+import emailjs from 'emailjs-com'
 
 export default function Contact() {
   const { ref, inView } = useInView({
@@ -20,23 +21,48 @@ export default function Contact() {
   })
 
   const [submitted, setSubmitted] = useState(false)
+  const [isLoading, setIsLoading] = useState(false)
+  const [error, setError] = useState('')
+
+  useEffect(() => {
+    // Initialize EmailJS
+    emailjs.init('o6w5UR438peoRn5ah')
+  }, [])
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
     setFormData({
       ...formData,
       [e.target.name]: e.target.value
     })
+    setError('')
   }
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
-    setSubmitted(true)
-    setTimeout(() => setSubmitted(false), 3000)
-    setFormData({ name: '', email: '', message: '' })
+    setIsLoading(true)
+    setError('')
+
+    try {
+      await emailjs.send('service_94jtqwg', 'template_wbamlyh', {
+        from_name: formData.name,
+        from_email: formData.email,
+        message: formData.message,
+        to_email: 'xean.coral@urios.edu.ph'
+      })
+
+      setSubmitted(true)
+      setFormData({ name: '', email: '', message: '' })
+      setTimeout(() => setSubmitted(false), 3000)
+    } catch (err) {
+      console.error('EmailJS error:', err)
+      setError('Failed to send message. Please try again.')
+    } finally {
+      setIsLoading(false)
+    }
   }
 
   const socialLinks = [
-    { icon: Mail, href: 'mailto:hello@example.com', label: 'Email', color: 'from-red-500 to-pink-500' },
+    { icon: Mail, href: 'mailto:xean.coral@urios.edu.ph', label: 'Email', color: 'from-red-500 to-pink-500' },
     { icon: Linkedin, href: '#', label: 'LinkedIn', color: 'from-blue-500 to-cyan-500' },
     { icon: Github, href: '#', label: 'GitHub', color: 'from-gray-700 to-gray-900' },
     { icon: Twitter, href: '#', label: 'Twitter', color: 'from-blue-400 to-blue-600' }
@@ -117,13 +143,20 @@ export default function Contact() {
                 />
               </div>
 
+              {error && (
+                <div className="p-4 bg-red-500/10 border border-red-500/30 rounded-lg text-red-600 text-sm">
+                  {error}
+                </div>
+              )}
+
               <motion.button
                 whileHover={{ scale: 1.02 }}
                 whileTap={{ scale: 0.98 }}
                 type="submit"
-                className="w-full px-6 py-3 bg-gradient-to-r from-primary to-accent text-white rounded-lg font-semibold hover:shadow-lg transition-shadow"
+                disabled={isLoading}
+                className="w-full px-6 py-3 bg-gradient-to-r from-primary to-accent text-white rounded-lg font-semibold hover:shadow-lg transition-shadow disabled:opacity-70 disabled:cursor-not-allowed"
               >
-                {submitted ? '✓ Message Sent!' : 'Send Message'}
+                {isLoading ? 'Sending...' : submitted ? '✓ Message Sent!' : 'Send Message'}
               </motion.button>
             </form>
           </motion.div>
@@ -157,10 +190,10 @@ export default function Contact() {
                     <div>
                       <p className="font-semibold text-foreground">{social.label}</p>
                       <p className="text-sm text-foreground/60">
-                        {social.label === 'Email' && 'hello@example.com'}
-                        {social.label === 'LinkedIn' && 'linkedin.com/in/yourprofile'}
-                        {social.label === 'GitHub' && 'github.com/yourprofile'}
-                        {social.label === 'Twitter' && '@yourhandle'}
+                        {social.label === 'Email' && 'xean.coral@urios.edu.ph'}
+                        {social.label === 'LinkedIn' && 'linkedin.com/in/xeancoral'}
+                        {social.label === 'GitHub' && 'github.com/xeancoral'}
+                        {social.label === 'Twitter' && '@xeancoral'}
                       </p>
                     </div>
                   </motion.a>
