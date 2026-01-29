@@ -1,8 +1,9 @@
 'use client'
 
 import { motion } from 'framer-motion'
-import { useInView } from 'react-intersection-observer'
+import { useRef, useState, useEffect } from 'react'
 import { ExternalLink, Github, Lightbulb, BookOpen, Rocket } from 'lucide-react'
+import { useInView } from 'react-intersection-observer'
 
 const bigThreeProjects = [
   {
@@ -38,10 +39,30 @@ const bigThreeProjects = [
 ]
 
 export default function BigThree() {
-  const { ref, inView } = useInView({
-    threshold: 0.1,
-    triggerOnce: true
-  })
+  const ref = useRef(null)
+  const [inView, setInView] = useState(false)
+
+  useEffect(() => {
+    const observer = new IntersectionObserver(
+      ([entry]) => {
+        if (entry.isIntersecting) {
+          setInView(true)
+          observer.unobserve(entry.target)
+        }
+      },
+      { threshold: 0.1 }
+    )
+
+    if (ref.current) {
+      observer.observe(ref.current)
+    }
+
+    return () => {
+      if (ref.current) {
+        observer.unobserve(ref.current)
+      }
+    }
+  }, [])
 
   return (
     <section id="big-three" ref={ref} className="relative py-20 px-6">
