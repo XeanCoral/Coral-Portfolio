@@ -2,40 +2,23 @@
 
 import React from "react"
 
-import { useState, useEffect, useRef } from 'react'
+import { useState, useEffect } from 'react'
 import { motion } from 'framer-motion'
-import { Upload, X } from 'lucide-react'
 import { Button } from '@/components/ui/button'
+import Image from 'next/image'
 
 export default function Home() {
   const [userName, setUserName] = useState('Xean Coral')
-  const [profileImage, setProfileImage] = useState<string | null>('/images/img-9132.jpeg')
   const [isEditing, setIsEditing] = useState(false)
   const [tempName, setTempName] = useState(userName)
-  const fileInputRef = useRef<HTMLInputElement>(null)
 
   // Load profile data from localStorage on mount
   useEffect(() => {
     const savedName = localStorage.getItem('portfolioUserName')
-    const savedImage = localStorage.getItem('portfolioProfileImage')
     
     if (savedName) setUserName(savedName)
-    if (savedImage) setProfileImage(savedImage)
     if (savedName) setTempName(savedName)
   }, [])
-
-  const handleImageUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files?.[0]
-    if (file) {
-      const reader = new FileReader()
-      reader.onload = (event) => {
-        const imageData = event.target?.result as string
-        setProfileImage(imageData)
-        localStorage.setItem('portfolioProfileImage', imageData)
-      }
-      reader.readAsDataURL(file)
-    }
-  }
 
   const handleNameSave = () => {
     if (tempName.trim()) {
@@ -43,11 +26,6 @@ export default function Home() {
       localStorage.setItem('portfolioUserName', tempName)
       setIsEditing(false)
     }
-  }
-
-  const handleRemoveImage = () => {
-    setProfileImage(null)
-    localStorage.removeItem('portfolioProfileImage')
   }
 
   const containerVariants = {
@@ -108,52 +86,16 @@ export default function Home() {
         >
           <div className="flex flex-col items-center gap-8">
             {/* Profile Picture Section */}
-            <div className="relative group">
+            <div className="relative">
               <div className="relative w-32 h-32 md:w-40 md:h-40">
-                {profileImage ? (
-                  <>
-                    <motion.img
-                      src={profileImage}
-                      alt={userName}
-                      className="w-full h-full object-cover rounded-full border-4 border-accent shadow-lg"
-                      initial={{ scale: 0.8, opacity: 0 }}
-                      animate={{ scale: 1, opacity: 1 }}
-                      transition={{ duration: 0.4 }}
-                    />
-                    <motion.button
-                      whileHover={{ scale: 1.1 }}
-                      whileTap={{ scale: 0.95 }}
-                      onClick={handleRemoveImage}
-                      className="absolute top-2 right-2 bg-destructive text-white rounded-full p-2 shadow-lg opacity-0 group-hover:opacity-100 transition-opacity"
-                      title="Remove image"
-                    >
-                      <X size={16} />
-                    </motion.button>
-                  </>
-                ) : (
-                  <div className="w-full h-full rounded-full bg-gradient-to-br from-primary/20 to-accent/20 flex items-center justify-center border-4 border-dashed border-accent">
-                    <Upload className="text-accent/60" size={40} />
-                  </div>
-                )}
+                <Image
+                  src="/images/img-9132.jpeg"
+                  alt={userName}
+                  fill
+                  className="object-cover rounded-full border-4 border-accent shadow-lg"
+                  priority
+                />
               </div>
-
-              {/* Upload Button */}
-              <input
-                ref={fileInputRef}
-                type="file"
-                accept="image/*"
-                onChange={handleImageUpload}
-                className="hidden"
-              />
-              <motion.button
-                whileHover={{ scale: 1.05 }}
-                whileTap={{ scale: 0.95 }}
-                onClick={() => fileInputRef.current?.click()}
-                className="absolute bottom-0 right-0 bg-accent text-white rounded-full p-3 shadow-lg hover:shadow-xl transition-all"
-                title="Change profile picture"
-              >
-                <Upload size={20} />
-              </motion.button>
             </div>
 
             {/* Name Section */}
