@@ -1,12 +1,23 @@
 'use client'
 
 import React, { useRef, useState, useEffect } from "react"
+import emailjs from '@emailjs/browser'
 import { motion } from 'framer-motion'
 import { Mail, Facebook, Github, Instagram } from 'lucide-react'
 
 export default function Contact() {
   const ref = useRef(null)
   const [inView, setInView] = useState(false)
+  const [emailjsReady, setEmailjsReady] = useState(false)
+
+  // Initialize EmailJS on component mount
+  useEffect(() => {
+    const publicKey = process.env.NEXT_PUBLIC_EMAILJS_PUBLIC_KEY
+    if (publicKey) {
+      emailjs.init(publicKey)
+      setEmailjsReady(true)
+    }
+  }, [])
 
   useEffect(() => {
     const observer = new IntersectionObserver(
@@ -54,33 +65,41 @@ export default function Contact() {
     setError(null)
 
     try {
+      // Check if EmailJS is ready
+      if (!emailjsReady) {
+        throw new Error('Email service is not ready. Please refresh the page.')
+      }
+
+      // Check if all config variables exist
+      const serviceId = process.env.NEXT_PUBLIC_EMAILJS_SERVICE_ID
+      const templateId = process.env.NEXT_PUBLIC_EMAILJS_TEMPLATE_ID
+      const publicKey = process.env.NEXT_PUBLIC_EMAILJS_PUBLIC_KEY
+
+      if (!serviceId || !templateId || !publicKey) {
+        throw new Error('Email configuration is incomplete. Please check your environment variables.')
+      }
+
       // Validate form data
       if (!formData.name.trim() || !formData.email.trim() || !formData.message.trim()) {
         throw new Error('Please fill in all fields')
       }
 
-      // Send email via API endpoint
-      const response = await fetch('/api/contact', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({
-          name: formData.name,
-          email: formData.email,
-          message: formData.message,
-        }),
-      })
-
-      const data = await response.json()
-
-      if (!response.ok) {
-        throw new Error(data.error || 'Failed to send message')
+      const templateParams = {
+        user_name: formData.name,
+        user_email: formData.email,
+        message: formData.message,
       }
 
-      setSubmitted(true)
-      setFormData({ name: '', email: '', message: '' })
-      setTimeout(() => setSubmitted(false), 4000)
+      // Send email via EmailJS
+      const response = await emailjs.send(serviceId, templateId, templateParams)
+
+      if (response.status === 200) {
+        setSubmitted(true)
+        setFormData({ name: '', email: '', message: '' })
+        setTimeout(() => setSubmitted(false), 4000)
+      } else {
+        throw new Error(`Email service returned status: ${response.status}`)
+      }
     } catch (error: unknown) {
       let errorMessage = 'Failed to send message'
       if (error instanceof Error) {
