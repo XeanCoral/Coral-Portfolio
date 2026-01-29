@@ -1,17 +1,35 @@
 'use client'
 
-import React from "react"
+import React, { useRef, useState, useEffect } from "react"
 
 import { motion } from 'framer-motion'
-import { useInView } from 'react-intersection-observer'
-import { Mail, Linkedin, Github, Twitter } from 'lucide-react'
-import { useState } from 'react'
+import { Mail, Facebook, Github, Instagram } from 'lucide-react'
 
 export default function Contact() {
-  const { ref, inView } = useInView({
-    threshold: 0.1,
-    triggerOnce: true
-  })
+  const ref = useRef(null)
+  const [inView, setInView] = useState(false)
+
+  useEffect(() => {
+    const observer = new IntersectionObserver(
+      ([entry]) => {
+        if (entry.isIntersecting) {
+          setInView(true)
+          observer.unobserve(entry.target)
+        }
+      },
+      { threshold: 0.1 }
+    )
+
+    if (ref.current) {
+      observer.observe(ref.current)
+    }
+
+    return () => {
+      if (ref.current) {
+        observer.unobserve(ref.current)
+      }
+    }
+  }, [])
 
   const [formData, setFormData] = useState({
     name: '',
@@ -36,10 +54,10 @@ export default function Contact() {
   }
 
   const socialLinks = [
-    { icon: Mail, href: 'mailto:hello@example.com', label: 'Email', color: 'from-red-500 to-pink-500' },
-    { icon: Linkedin, href: '#', label: 'LinkedIn', color: 'from-blue-500 to-cyan-500' },
-    { icon: Github, href: '#', label: 'GitHub', color: 'from-gray-700 to-gray-900' },
-    { icon: Twitter, href: '#', label: 'Twitter', color: 'from-blue-400 to-blue-600' }
+    { icon: Mail, href: 'https://mail.google.com/mail/u/0/?tab=rm&ogbl#inbox', label: 'Email', color: 'from-red-500 to-pink-500' },
+    { icon: Facebook, href: 'https://www.facebook.com/profile.php?id=100045741675556', label: 'Facebook', color: 'from-blue-500 to-blue-700' },
+    { icon: Github, href: 'https://github.com/XeanCoral?tab=repositories', label: 'GitHub', color: 'from-gray-700 to-gray-900' },
+    { icon: Instagram, href: 'https://www.instagram.com/xean_nelson16/', label: 'Instagram', color: 'from-pink-500 to-orange-500' }
   ]
 
   return (
@@ -157,10 +175,10 @@ export default function Contact() {
                     <div>
                       <p className="font-semibold text-foreground">{social.label}</p>
                       <p className="text-sm text-foreground/60">
-                        {social.label === 'Email' && 'hello@example.com'}
-                        {social.label === 'LinkedIn' && 'linkedin.com/in/yourprofile'}
-                        {social.label === 'GitHub' && 'github.com/yourprofile'}
-                        {social.label === 'Twitter' && '@yourhandle'}
+                        {social.label === 'Email' && 'Gmail'}
+                        {social.label === 'Facebook' && 'facebook.com/xean'}
+                        {social.label === 'GitHub' && 'github.com/XeanCoral'}
+                        {social.label === 'Instagram' && '@xean_nelson16'}
                       </p>
                     </div>
                   </motion.a>

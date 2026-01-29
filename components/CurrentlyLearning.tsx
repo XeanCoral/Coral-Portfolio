@@ -1,8 +1,9 @@
 'use client'
 
 import { motion } from 'framer-motion'
-import { useInView } from 'react-intersection-observer'
+import { useRef, useState, useEffect } from 'react'
 import { Code2, Zap, Brain, TrendingUp } from 'lucide-react'
+import { useInView } from 'react-intersection-observer' // Import useInView
 
 const learningItems = [
   {
@@ -40,10 +41,30 @@ const learningItems = [
 ]
 
 export default function CurrentlyLearning() {
-  const { ref, inView } = useInView({
-    threshold: 0.1,
-    triggerOnce: true
-  })
+  const ref = useRef(null)
+  const [inView, setInView] = useState(false)
+
+  useEffect(() => {
+    const observer = new IntersectionObserver(
+      ([entry]) => {
+        if (entry.isIntersecting) {
+          setInView(true)
+          observer.unobserve(entry.target)
+        }
+      },
+      { threshold: 0.1 }
+    )
+
+    if (ref.current) {
+      observer.observe(ref.current)
+    }
+
+    return () => {
+      if (ref.current) {
+        observer.unobserve(ref.current)
+      }
+    }
+  }, [])
 
   return (
     <section id="learning" ref={ref} className="relative py-20 px-6 bg-foreground/2">

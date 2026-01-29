@@ -29,8 +29,8 @@ export default function Page() {
       <Navigation isScrolled={isScrolled} />
       <main className="relative">
         <Hero />
-        <About />
         <Home />
+        <About />
         <BigThree />
         <CurrentlyLearning />
         <Projects />

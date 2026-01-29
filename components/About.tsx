@@ -1,7 +1,7 @@
 'use client'
 
 import { motion } from 'framer-motion'
-import { useInView } from 'react-intersection-observer'
+import { useRef, useState, useEffect } from 'react'
 
 const skills = [
   { name: 'React/Next.js', level: 95 },
@@ -13,10 +13,30 @@ const skills = [
 ]
 
 export default function About() {
-  const { ref, inView } = useInView({
-    threshold: 0.2,
-    triggerOnce: true
-  })
+  const ref = useRef(null)
+  const [inView, setInView] = useState(false)
+
+  useEffect(() => {
+    const observer = new IntersectionObserver(
+      ([entry]) => {
+        if (entry.isIntersecting) {
+          setInView(true)
+          observer.unobserve(entry.target)
+        }
+      },
+      { threshold: 0.2 }
+    )
+
+    if (ref.current) {
+      observer.observe(ref.current)
+    }
+
+    return () => {
+      if (ref.current) {
+        observer.unobserve(ref.current)
+      }
+    }
+  }, [])
 
   const containerVariants = {
     hidden: { opacity: 0 },
@@ -49,7 +69,7 @@ export default function About() {
           <div className="w-20 h-1 bg-gradient-to-r from-primary to-accent rounded-full" />
         </motion.div>
 
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 items-center">
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 items-center mb-16">
           <motion.div
             initial={{ opacity: 0, x: -40 }}
             animate={inView ? { opacity: 1, x: 0 } : { opacity: 0, x: -40 }}
@@ -68,29 +88,55 @@ export default function About() {
           </motion.div>
 
           <motion.div
-            variants={containerVariants}
-            initial="hidden"
-            animate={inView ? "visible" : "hidden"}
-            className="space-y-4"
+            initial={{ opacity: 0, x: 40 }}
+            animate={inView ? { opacity: 1, x: 0 } : { opacity: 0, x: 40 }}
+            transition={{ duration: 0.8 }}
+            className="flex justify-center"
           >
-            {skills.map((skill) => (
-              <motion.div key={skill.name} variants={itemVariants} className="space-y-2">
-                <div className="flex justify-between items-center">
-                  <span className="font-semibold text-foreground">{skill.name}</span>
-                  <span className="text-accent">{skill.level}%</span>
-                </div>
-                <div className="w-full bg-foreground/10 rounded-full h-2 overflow-hidden">
-                  <motion.div
-                    initial={{ width: 0 }}
-                    animate={inView ? { width: `${skill.level}%` } : { width: 0 }}
-                    transition={{ duration: 1.2, ease: 'easeOut' }}
-                    className="h-full bg-gradient-to-r from-primary to-accent rounded-full"
-                  />
-                </div>
-              </motion.div>
-            ))}
+            <div className="relative rounded-3xl overflow-hidden shadow-xl">
+              <img
+                src="/images/img-9132.jpeg"
+                alt="Profile"
+                className="w-full h-auto object-cover"
+              />
+            </div>
           </motion.div>
         </div>
+
+        <motion.div
+          initial={{ opacity: 0, y: 20 }}
+          animate={inView ? { opacity: 1, y: 0 } : { opacity: 0, y: 20 }}
+          transition={{ duration: 0.6, delay: 0.2 }}
+          className="mb-12"
+        >
+          <h3 className="text-3xl md:text-4xl font-bold text-foreground">
+            Skills & <span className="text-primary">Expertise</span>
+          </h3>
+        </motion.div>
+
+        <motion.div
+          variants={containerVariants}
+          initial="hidden"
+          animate={inView ? "visible" : "hidden"}
+          className="grid grid-cols-1 md:grid-cols-2 gap-8"
+        >
+          {skills.map((skill) => (
+            <motion.div key={skill.name} variants={itemVariants} className="space-y-2">
+              <div className="flex justify-between items-center">
+                <span className="font-semibold text-foreground">{skill.name}</span>
+                <span className="text-primary font-semibold">{skill.level}%</span>
+              </div>
+              <div className="w-full bg-foreground/10 rounded-full h-2 overflow-hidden">
+                <motion.div
+                  initial={{ width: 0 }}
+                  animate={inView ? { width: `${skill.level}%` } : { width: 0 }}
+                  transition={{ duration: 1.2, ease: 'easeOut' }}
+                  className="h-full bg-primary rounded-full"
+                />
+              </div>
+            </motion.div>
+          ))}
+        </motion.div>
       </div>
     </section>
   )
